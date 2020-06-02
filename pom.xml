@@ -75,6 +75,7 @@
         <module>txtfilewriter</module>
         <module>ftpwriter</module>
         <module>hdfswriter</module>
+        <module>modifiedhdfswriter</module>
         <module>streamwriter</module>
         <module>otswriter</module>
         <module>oraclewriter</module>

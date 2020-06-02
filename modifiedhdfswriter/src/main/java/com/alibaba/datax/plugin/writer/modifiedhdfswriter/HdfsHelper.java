@@ -123,6 +123,23 @@ public  class HdfsHelper {
         return files;
     }
 
+    public Path[] listHdfsDir(String dir) {
+        Path path = new Path(dir);
+        Path[] files = null;
+        try {
+            FileStatus[] status = fileSystem.listStatus(path);
+            files = new Path[status.length];
+            for(int i=0;i<status.length;i++){
+                files[i] = status[i].getPath();
+            }
+        } catch (IOException e) {
+            String message = String.format("获取目录[%s]文件列表时发生网络IO异常,请检查您的网络是否正常！", dir);
+            LOG.error(message);
+            throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
+        }
+        return files;
+    }
+
     /**
      * 获取以fileName__ 开头的文件列表
      * @param dir

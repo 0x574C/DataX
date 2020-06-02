@@ -81,10 +81,10 @@ public class HdfsWriter extends Writer {
             //writeMode check
             this.writeMode = this.writerSliceConfig.getNecessaryValue(Key.WRITE_MODE, HdfsWriterErrorCode.REQUIRED_VALUE);
             writeMode = writeMode.toLowerCase().trim();
-            Set<String> supportedWriteModes = Sets.newHashSet("append", "nonconflict");
+            Set<String> supportedWriteModes = Sets.newHashSet("append", "nonconflict", "overwrite");
             if (!supportedWriteModes.contains(writeMode)) {
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
-                        String.format("仅支持append, nonConflict两种模式, 不支持您配置的 writeMode 模式 : [%s]",
+                        String.format("仅支持append, nonConflict, overwrite三种模式, 不支持您配置的 writeMode 模式 : [%s]",
                                 writeMode));
             }
             this.writerSliceConfig.set(Key.WRITE_MODE, writeMode);
@@ -179,6 +179,10 @@ public class HdfsWriter extends Writer {
                     LOG.error(String.format("冲突文件列表为: [%s]", StringUtils.join(allFiles, ",")));
                     throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                             String.format("由于您配置了writeMode nonConflict,但您配置的path: [%s] 目录不为空, 下面存在其他文件或文件夹.", path));
+                } else if ("overwrite".equalsIgnoreCase(writeMode)) {
+                    LOG.info("由于您配置了writeMode overwrite, 开始清理 [{}] 下面的所有内容", path);
+                    Path[] files = hdfsHelper.listHdfsDir(path);
+                    hdfsHelper.deleteFiles(files);
                 }
             }else{
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
