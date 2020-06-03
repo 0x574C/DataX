@@ -34,7 +34,7 @@ public class ParquetUtils {
     public String constructSchema(List<Configuration> columns) {
         StringBuilder schema = new StringBuilder("message pair {\n");
         for (Configuration eachColumnConf : columns) {
-            schema.append(" required ");
+            schema.append(" optional ");
             SupportHiveDataType columnType = SupportHiveDataType.valueOf(eachColumnConf.getString(Key.TYPE).toUpperCase());
             String columnName = eachColumnConf.getString(Key.NAME);
             schema.append(getColumnDef(columnType, columnName, eachColumnConf));
@@ -85,7 +85,7 @@ public class ParquetUtils {
                         .asDataXException(
                                 HdfsWriterErrorCode.ILLEGAL_VALUE,
                                 String.format(
-                                        "您的配置文件中的列配置信息有误. 因为DataX 不支持数据库写入这种字段类型. 字段名:[%s], 字段类型:[%d]. 请修改表中该字段的类型或者不同步该字段.",
+                                        "您的配置文件中的列配置信息有误. 因为DataX 不支持数据库写入这种字段类型. 字段名:[%s], 字段类型:[%s]. 请修改表中该字段的类型或者不同步该字段.",
                                         eachColumnConf.getString(Key.NAME),
                                         eachColumnConf.getString(Key.TYPE)));
         }
@@ -106,9 +106,7 @@ public class ParquetUtils {
         Column column;
         for (int i = 0; i < recordLength; i++) {
             column = record.getColumn(i);
-            if (column.getRawData() == null) {
-                group.append(columnsConf.get(i).getString(Key.NAME), (String) null);
-            } else {
+            if (column.getRawData() != null) {
                 try {
                     parseData(group, column, columnsConf.get(i).getString(Key.NAME), columnsConf.get(i).getString(Key.TYPE));
                 } catch (Exception e) {
