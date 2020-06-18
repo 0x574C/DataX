@@ -34,7 +34,6 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import parquet.example.data.Group;
-import parquet.hadoop.ParquetInputFormat;
 import parquet.hadoop.ParquetReader;
 import parquet.hadoop.example.GroupReadSupport;
 
@@ -61,6 +60,12 @@ public class DFSUtil {
 
     public static final String HDFS_DEFAULTFS_KEY = "fs.defaultFS";
     public static final String HADOOP_SECURITY_AUTHENTICATION_KEY = "hadoop.security.authentication";
+
+    // Incremental
+
+    public static final String INCREMENTAL = "incremental";
+    public static final String INCREMENTAL_COLUMN = "increColumn";
+    public static final String INCREMENTAL_LAST_VALUE = "increLastValue";
 
 
     public DFSUtil(Configuration taskConfig) {
@@ -442,6 +447,10 @@ public class DFSUtil {
             String message = String.format("请确认您所读取的列配置正确！columnIndexMax 小于0,column:%s", JSON.toJSONString(column));
             throw DataXException.asDataXException(HdfsReaderErrorCode.BAD_CONFIG_VALUE, message);
         }
+    }
+
+    private boolean isSaveRecord(Configuration readerSliceConfig, ArrayWritable values) {
+        if ()
     }
 
     private Record transportOneRecord(List<ColumnEntry> columnConfigs, List<Object> recordFields
