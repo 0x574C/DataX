@@ -31,11 +31,14 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.parquet.example.data.Group;
+import org.apache.parquet.hadoop.ParquetReader;
+import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import parquet.example.data.Group;
-import parquet.hadoop.ParquetReader;
-import parquet.hadoop.example.GroupReadSupport;
+//import parquet.example.data.Group;
+//import parquet.hadoop.ParquetReader;
+//import parquet.hadoop.example.GroupReadSupport;
 
 import java.io.IOException;
 import java.io.InputStream;
