@@ -39,6 +39,9 @@ import parquet.hadoop.example.GroupReadSupport;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -426,7 +429,14 @@ public class DFSUtil {
                 List<? extends StructField> fields = inspector.getAllStructFieldRefs();
 
                 List<Object> recordFields;
+
+                boolean incremental = readerSliceConfig.get(INCREMENTAL) != null;
                 while (reader.next(key, value)) {
+                    // 增量
+                    if (incremental && !isSaveRecord(readerSliceConfig, (ArrayWritable)value)) {
+                        continue;
+                    }
+
                     recordFields = new ArrayList<>();
 
                     for (int i = 0; i <= columnIndexMax; i++) {
@@ -449,8 +459,30 @@ public class DFSUtil {
         }
     }
 
+    /**
+     * 增量导出HDFS数据时，判断当前记录是否保留
+     *
+     * @param readerSliceConfig reader配置
+     * @param values 当前行的值
+     * @return boolean
+     */
     private boolean isSaveRecord(Configuration readerSliceConfig, ArrayWritable values) {
-        if ()
+        if (readerSliceConfig.get(INCREMENTAL_LAST_VALUE) == null) {
+            return true;
+        }
+        Integer increColumnIndex = readerSliceConfig.getInt(INCREMENTAL_COLUMN);
+        String currentValueStr = values.get()[increColumnIndex].toString();
+        Object lastValue = readerSliceConfig.get(INCREMENTAL_LAST_VALUE);
+        try {
+            Constructor constructor = lastValue.getClass().getDeclaredConstructor(String.class);
+            Object currentValue = constructor.newInstance(currentValueStr);
+
+            Method compareTo = lastValue.getClass().getDeclaredMethod("compareTo", lastValue.getClass());
+            // 上次导出的最大值小于当前值，则保留当前记录
+            return (int) compareTo.invoke(lastValue, currentValue) < 0;
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            return false;
+        }
     }
 
     private Record transportOneRecord(List<ColumnEntry> columnConfigs, List<Object> recordFields
