@@ -383,7 +383,7 @@ public class DFSUtil {
 
     public void parquetFileStartRead(String sourceParquetFile, Configuration readerSliceConfig,
                                      RecordSender recordSender, TaskPluginCollector taskPluginCollector) {
-        LOG.info("Start Read parquetfile [%s]", sourceParquetFile);
+        LOG.info("Start Read parquetfile [{}]", sourceParquetFile);
         List<ColumnEntry> column = UnstructuredStorageReaderUtil
                 .getListColumnEntry(readerSliceConfig, com.alibaba.datax.plugin.unstructuredstorage.reader.Key.COLUMN);
         String nullFormat = readerSliceConfig.getString(com.alibaba.datax.plugin.unstructuredstorage.reader.Key.NULL_FORMAT);
@@ -444,7 +444,11 @@ public class DFSUtil {
 
                     for (int i = 0; i <= columnIndexMax; i++) {
                         Object field = inspector.getStructFieldData(value, fields.get(i));
-                        recordFields.add(field);
+                        if (field instanceof BytesWritable) {
+                            recordFields.add(new String(((BytesWritable) field).getBytes()));
+                        } else {
+                            recordFields.add(field);
+                        }
                     }
                     transportOneRecord(column, recordFields, recordSender,
                             taskPluginCollector, isReadAllColumns, nullFormat);
@@ -454,6 +458,7 @@ public class DFSUtil {
                 String message = String.format("从parquetfile文件路径[%s]中读取数据发生异常，请联系系统管理员。"
                         , sourceParquetFile);
                 LOG.error(message);
+                LOG.error(e.getMessage());
                 throw DataXException.asDataXException(HdfsReaderErrorCode.READ_FILE_ERROR, message);
             }
         } else {
