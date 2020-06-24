@@ -28,6 +28,7 @@ public final class ConfigParser {
         configuration.merge(
                 ConfigParser.parseCoreConfig(CoreConstant.DATAX_CONF_PATH),
                 false);
+        LOG.info("####### configuration: {} #######", configuration.toJSON());
         // todo config优化，只捕获需要的plugin
         String readerPluginName = configuration.getString(
                 CoreConstant.DATAX_JOB_CONTENT_READER_NAME);
@@ -97,6 +98,7 @@ public final class ConfigParser {
                 httpGet.setURI(url.toURI());
 
                 jobContent = httpClientUtil.executeAndGetWithFailedRetry(httpGet, 1, 1000l);
+                LOG.info("####### jobContent: {} #######", jobContent);
             } catch (Exception e) {
                 throw DataXException.asDataXException(FrameworkErrorCode.CONFIG_ERROR, "获取作业配置信息失败:" + jobResource, e);
             }
